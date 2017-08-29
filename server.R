@@ -149,9 +149,11 @@ shinyServer(function(input, output) {
 
   output$dataview <- renderTable({
     head(viewData(), n = 6)
-  })
+  }, caption = "Brief Data View", caption.placement = getOption("xtable.caption.placement", "top"), cex = 5)
 
   output$taxacurve <- renderPlot({
+
+
     if (input$model == FALSE) {
       plot(taxaaccum(), xlab = "Year", ylab = paste("Number of", tolower(input$rank), sep = " "), main = input$taxa, ylim = c(0, max(taxaaccum()$"taxa count")*1.35))
     } else if(input$model == TRUE) {
