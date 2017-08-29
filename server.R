@@ -1,23 +1,25 @@
 setwd("/Users/hhsieh/Documents/ANTABIS/RASp/RAS species list/Three Bigs")
-data <- read.csv("ThreeBigs_n_2.0.csv", sep = ",", header = T, row.names = NULL)
-data_s <- subset(data, Match.type != "")
-data_s <- subset(data_s, Kingdom !="" & Kingdom != "P. Micheli ex Haller")
-library(stringr)
+data <- read.csv("data_m.csv", sep = ",", header = T, row.names = NULL)
+#data <- read.csv("ThreeBigs_n_2.0.csv", sep = ",", header = T, row.names = NULL)
+#data_s <- subset(data, Match.type != "")
+#data_s <- subset(data_s, Kingdom !="" & Kingdom != "P. Micheli ex Haller")
+#library(stringr)
 
-Authority_year <- function(Authority_accepted) {
-  regexp <- "[[:digit:]]+"
-  return(str_extract(Authority_accepted, regexp))
-}
+#Authority_year <- function(Authority_accepted) {
+#  regexp <- "[[:digit:]]+"
+#  return(str_extract(Authority_accepted, regexp))
+#}
 
-Authority <- as.character(data_s$Authority_accepted)
-year <- unlist(lapply(Authority, Authority_year))
-data_m <- data.frame(data_s, year)
-data_m <- subset(data_m, year!= "")
+#Authority <- as.character(data_s$Authority_accepted)
+#year <- unlist(lapply(Authority, Authority_year))
+#data_m <- data.frame(data_s, year)
+#data_m <- subset(data_m, year!= "")
 
 library(data.table)
-data_m <- data.frame(data_s, year)
-data_m <- subset(data_m, year!= "")[,c(16,19:24,44)]
-colnames(data_m) <- c("AphiaIDs", "Kingdoms", "Phyla", "Classes", "Orders", "Families", "Genera", "year")
+#data_m <- data.frame(data_s, year)
+#data_m <- subset(data_m, year!= "")[,c(16,19:24,44)]
+#colnames(data_m) <- c("AphiaIDs", "Kingdoms", "Phyla", "Classes", "Orders", "Families", "Genera", "year")
+#write.csv(data_m, "data_m.csv", row.names = FALSE)
 
 library(shiny)
 
