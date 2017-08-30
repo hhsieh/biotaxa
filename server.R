@@ -29,38 +29,32 @@ shinyServer(function(input, output) {
                  | Families == input$taxa | Genera == input$taxa)
   })
 
-  taxaaccum <- reactive({
-    df <- subset(data_m, Kingdoms == input$taxa | Phyla == input$taxa | Classes == input$taxa | Orders == input$taxa
-                 | Families == input$taxa | Genera == input$taxa)
-    dt = as.data.table(unique(df))
-    setkey(dt, "year")
-    if (input$rank == "Phylum" | input$rank == "phylum") {
-      dt[, id := as.numeric(factor(Phyla, levels = unique(Phyla)))]
-      #ranklabel = "phyla"
-    } else if (input$rank == "Class" | input$rank == "class") {
-      dt[, id := as.numeric(factor(Classes, levels = unique(Classes)))]
-      #ranklabel = "classes"
-    } else if (input$rank == "Order" | input$rank == "order") {
-      dt[, id := as.numeric(factor(Orders, levels = unique(Orders)))]
-      #ranklabel = "orders"
-    } else if (input$rank == "Family" | input$rank == "family") {
-      dt[, id := as.numeric(factor(Families, levels = unique(Families)))]
-      #ranklabel = "families"
-    } else if (input$rank == "Genus" | input$rank == "genus") {
-      dt[, id := as.numeric(factor(Genera, levels = unique(Genera)))]
-      #ranklabel = "genera"
-    } else if (input$rank == "Species" | input$rank == "species") {
-      dt[, id := as.numeric(factor(AphiaIDs, levels = unique(AphiaIDs)))]
-      #ranklabel = "species"
-    }
+  #taxaaccum <- reactive({
+  #  df <- subset(data_m, Kingdoms == input$taxa | Phyla == input$taxa | Classes == input$taxa | Orders == input$taxa
+  #               | Families == input$taxa | Genera == input$taxa)
+  #  dt = as.data.table(unique(df))
+  #  setkey(dt, "year")
+  #  if (input$rank == "Phylum" | input$rank == "phylum") {
+  #    dt[, id := as.numeric(factor(Phyla, levels = unique(Phyla)))]
+  #  } else if (input$rank == "Class" | input$rank == "class") {
+  #    dt[, id := as.numeric(factor(Classes, levels = unique(Classes)))]
+  #  } else if (input$rank == "Order" | input$rank == "order") {
+  #    dt[, id := as.numeric(factor(Orders, levels = unique(Orders)))]
+  #  } else if (input$rank == "Family" | input$rank == "family") {
+  #    dt[, id := as.numeric(factor(Families, levels = unique(Families)))]
+  #  } else if (input$rank == "Genus" | input$rank == "genus") {
+  #    dt[, id := as.numeric(factor(Genera, levels = unique(Genera)))]
+  #  } else if (input$rank == "Species" | input$rank == "species") {
+  #    dt[, id := as.numeric(factor(AphiaIDs, levels = unique(AphiaIDs)))]
+  #  }
 
-    dt.out <- dt[J(unique(year)), mult = "last"]#[, Phylum := NULL]
-    dt.out[, id := cummax(id)]
-    numtaxa <- cummax(as.numeric(factor(dt$id)))
-    taxa_dt <- aggregate(numtaxa, list(year = dt$year), max)
-    colnames(taxa_dt) <- c("year", "taxa count")
-    taxa_dt <- taxa_dt
-  })
+  #  dt.out <- dt[J(unique(year)), mult = "last"]#[, Phylum := NULL]
+  #  dt.out[, id := cummax(id)]
+  #  numtaxa <- cummax(as.numeric(factor(dt$id)))
+  #  taxa_dt <- aggregate(numtaxa, list(year = dt$year), max)
+  #  colnames(taxa_dt) <- c("year", "taxa count")
+  #  taxa_dt <- taxa_dt
+  #})
 
 
   modelfit <- reactive({
@@ -87,7 +81,6 @@ shinyServer(function(input, output) {
     numtaxa <- cummax(as.numeric(factor(dt$id)))
     taxa_dt <- aggregate(numtaxa, list(year = dt$year), max)
     colnames(taxa_dt) <- c("year", "taxa count")
-    #taxa_dt <- taxa_dt
     N_obs <- taxa_dt$'taxa count'
     times <- as.numeric(taxa_dt$year)
 
@@ -95,15 +88,11 @@ shinyServer(function(input, output) {
     K_start <- SS["alpha"]
     R_start <- 1/SS["scale"]
     N0_start <- SS["alpha"]/(exp(SS["xmid"]/SS["scale"])) + 1
-    #return(summary(SS))
 
     log_formula<-formula(N_obs ~ K * N0 * exp(R * times) / (K + N0 * (exp(R * times) - 1)))
     m<-nls(log_formula,start = list(K = K_start, R = R_start, N0 = N0_start))
-    #estimated parameters
-    #summary(m)
 
-    corr_coef <- cor(N_obs,predict(m))
-    #return(corr_coef)
+    #corr_coef <- cor(N_obs,predict(m))
     lines(times,predict(m),col="red",lty=2,lwd=2)
     n = length(times)
 
@@ -128,8 +117,6 @@ shinyServer(function(input, output) {
     LW = (K - K_sd) * (N0 - N0_sd) * exp((R - R_sd)*times)/((K - K_sd)+(N0 - N0_sd)*(exp((R - R_sd)*times)-1))
     lines(times, LW, col ='red', lty = 'dashed')
     taxa_dt <- taxa_dt
-    #lines(times,predict(m),col="red",lty=2,lwd=2)
-    #times
   })
 
   ranklable <- reactive({
@@ -155,9 +142,35 @@ shinyServer(function(input, output) {
 
   output$taxacurve <- renderPlot({
 
-
     if (input$model == FALSE) {
-      plot(taxaaccum(), xlab = "Year", ylab = paste("Number of", tolower(input$rank), sep = " "), main = input$taxa, ylim = c(0, max(taxaaccum()$"taxa count")*1.35))
+      df <- subset(data_m, Kingdoms == input$taxa | Phyla == input$taxa | Classes == input$taxa | Orders == input$taxa
+                   | Families == input$taxa | Genera == input$taxa)
+      dt = as.data.table(unique(df))
+      setkey(dt, "year")
+      if (input$rank == "Phylum" | input$rank == "phylum") {
+        dt[, id := as.numeric(factor(Phyla, levels = unique(Phyla)))]
+      } else if (input$rank == "Class" | input$rank == "class") {
+        dt[, id := as.numeric(factor(Classes, levels = unique(Classes)))]
+      } else if (input$rank == "Order" | input$rank == "order") {
+        dt[, id := as.numeric(factor(Orders, levels = unique(Orders)))]
+      } else if (input$rank == "Family" | input$rank == "family") {
+        dt[, id := as.numeric(factor(Families, levels = unique(Families)))]
+      } else if (input$rank == "Genus" | input$rank == "genus") {
+        dt[, id := as.numeric(factor(Genera, levels = unique(Genera)))]
+      } else if (input$rank == "Species" | input$rank == "species") {
+        dt[, id := as.numeric(factor(AphiaIDs, levels = unique(AphiaIDs)))]
+      }
+
+      dt.out <- dt[J(unique(year)), mult = "last"]#[, Phylum := NULL]
+      dt.out[, id := cummax(id)]
+      numtaxa <- cummax(as.numeric(factor(dt$id)))
+      taxa_dt <- aggregate(numtaxa, list(year = dt$year), max)
+      colnames(taxa_dt) <- c("year", "taxa count")
+      taxa_dt <- taxa_dt
+      plot(taxa_dt, xlab = "Year", ylab = paste("Number of", tolower(input$rank), sep = " "), main = input$taxa, ylim = c(0, max(taxa_dt$"taxa count")*1.35))
+
+
+      #plot(taxaaccum(), xlab = "Year", ylab = paste("Number of", tolower(input$rank), sep = " "), main = input$taxa, ylim = c(0, max(taxaaccum()$"taxa count")*1.35))
     } else if(input$model == TRUE) {
       df <- subset(data_m, Kingdoms == input$taxa | Phyla == input$taxa | Classes == input$taxa | Orders == input$taxa
                    | Families == input$taxa | Genera == input$taxa)
